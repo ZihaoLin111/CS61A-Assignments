@@ -118,14 +118,8 @@ def double_eights(n):
     False
     """
     "*** YOUR CODE HERE ***"
-    cnt = 0
-    i = 0
-    while (n // pow(10, i)) != 0:
-        i = i + 1
-        if (n % pow(10, i) // pow(10, i - 1)) == 8:
-            cnt = cnt + 1
-    if cnt % 2 == 0:
-        return True
-    else:
-        return False
-
+    while n:
+        if n % 10 == 8 and n // 10 % 10 == 8:
+            return True
+        n = n // 10
+    return False
