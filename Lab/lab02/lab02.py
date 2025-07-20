@@ -121,7 +121,27 @@ def cycle(f1, f2, f3):
     19
     """
     "*** YOUR CODE HERE ***"
-    def my_cycle(x):
-        return f3(f2(f1(x)))
-    return my_cycle(x)
+    def docycle(n):
+        def g(x):
+            cnt = n
+            ans = x
+            while True:
+                if cnt > 0:
+                    ans = f1(ans)
+                    cnt -= 1
+                else:
+                    break
+                if cnt > 0:
+                    ans = f2(ans)
+                    cnt -= 1
+                else:
+                    break
+                if cnt > 0:
+                    ans = f3(ans)
+                    cnt -= 1
+                else:
+                    break
+            return ans
+        return g
+    return docycle
 
