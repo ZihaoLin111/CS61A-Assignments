@@ -38,6 +38,12 @@ def pick(paragraphs, select, k):
     """
     # BEGIN PROBLEM 1
     "*** YOUR CODE HERE ***"
+    true_paragraphs = [paragraph for paragraph in paragraphs if select(paragraph) == True]
+    length = len(true_paragraphs)
+    if k > length - 1:
+        return ''
+    else:
+        return true_paragraphs[k]
     # END PROBLEM 1
 
 
@@ -58,6 +64,14 @@ def about(subject):
 
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
+    def check(paragraphs):
+        key_words = split(lower(remove_punctuation(paragraphs)))
+        for x in subject:
+            for y in key_words:
+                if x == y:
+                    return True
+        return False
+    return check
     # END PROBLEM 2
 
 
@@ -88,6 +102,17 @@ def accuracy(typed, source):
     source_words = split(source)
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
+    length_typed = len(typed_words)
+    length_source = len(source_words)
+    cnt = 0
+    if length_typed == 0 and length_source == 0:
+        return 100.0
+    elif length_typed == 0 and length_source != 0:
+        return 0.0
+    for i in range(min(length_typed, length_source)):
+        if typed_words[i] == source_words[i]:
+            cnt += 1
+    return cnt / length_typed * 100
     # END PROBLEM 3
 
 
@@ -106,6 +131,8 @@ def wpm(typed, elapsed):
     assert elapsed > 0, "Elapsed time must be positive"
     # BEGIN PROBLEM 4
     "*** YOUR CODE HERE ***"
+    words = len(typed) / 5
+    return words / elapsed * 60
     # END PROBLEM 4
 
 
@@ -136,6 +163,18 @@ def memo_diff(diff_function):
     def memoized(typed, source, limit):
         # BEGIN PROBLEM EC
         "*** YOUR CODE HERE ***"
+        key = (typed, source)
+        result = diff_function(typed, source, limit)
+        if key not in cache:
+            cache[key] = (result, limit)
+            return result
+        else:
+            value, former_limit = cache[key]
+            if limit <= former_limit:
+                return value
+            else:
+                cache[key] = (result, limit)
+                return result
         # END PROBLEM EC
 
     return memoized
@@ -167,6 +206,14 @@ def autocorrect(typed_word, word_list, diff_function, limit):
     """
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    if typed_word in word_list:
+        return typed_word
+    differences = [diff_function(typed_word, word, limit) for word in word_list]
+    minimum = min(differences, key = abs)
+    if minimum > limit:
+        return typed_word
+    idx = differences.index(minimum)
+    return word_list[idx]
     # END PROBLEM 5
 
 
@@ -193,7 +240,17 @@ def furry_fixes(typed, source, limit):
     5
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
+    def count(typed, source, limit, cnt):
+        if cnt > limit:
+            return cnt
+        elif len(typed) == 0 or len(source) == 0:
+            return cnt
+        elif typed[0] != source[0]:
+            return count(typed[1:], source[1:], limit, cnt + 1)
+        else:
+            return count(typed[1:], source[1:], limit, cnt)
+    cnt = abs(len(source) - len(typed))
+    return count(typed, source, limit, cnt)
     # END PROBLEM 6
 
 
@@ -214,23 +271,29 @@ def minimum_mewtations(typed, source, limit):
     >>> minimum_mewtations("ckiteus", "kittens", big_limit) # ckiteus -> kiteus -> kitteus -> kittens
     3
     """
-    assert False, 'Remove this line'
-    if ___________: # Base cases should go here, you may add more base cases as needed.
+    if typed == source: # Base cases should go here, you may add more base cases as needed.
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return 0
         # END
     # Recursive cases should go below here
-    if ___________: # Feel free to remove or add additional cases
+    if limit < 0: # Feel free to remove or add additional cases
         # BEGIN
         "*** YOUR CODE HERE ***"
+        return limit + 1
         # END
-    else:
-        add = ... # Fill in these lines
-        remove = ...
-        substitute = ...
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
+    if not typed or not source:
+        return max(len(typed), len(source))
+    if typed[0] == source[0]:
+        return minimum_mewtations(typed[1:], source[1:], limit)
+   
+    add = minimum_mewtations(typed, source[1:], limit - 1) + 1 # Fill in these lines
+    remove = minimum_mewtations(typed[1:], source, limit - 1) + 1
+    substitute = minimum_mewtations(typed[1:], source[1:], limit - 1) + 1
+    # BEGIN
+    "*** YOUR CODE HERE ***"
+    return min(add, remove, substitute)
+    # END
 
 
 # Ignore the line below
@@ -276,6 +339,13 @@ def report_progress(typed, source, user_id, upload):
     """
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    cnt = 0
+    i = 0
+    while i < len(typed) and typed[i] == source[i]:
+        cnt += 1
+        i +=1
+    upload({'id': user_id, 'progress': cnt / len(source)})
+    return cnt / len(source)
     # END PROBLEM 8
 
 
@@ -299,7 +369,7 @@ def time_per_word(words, timestamps_per_player):
     """
     tpp = timestamps_per_player  # A shorter name (for convenience)
     # BEGIN PROBLEM 9
-    times = []  # You may remove this line
+    times = [[tpp[i][j] - tpp[i][j - 1] for j in range(len(tpp[i])) if j > 0] for i in range(len(tpp))]  # You may remove this line
     # END PROBLEM 9
     return {'words': words, 'times': times}
 
@@ -327,6 +397,18 @@ def fastest_words(words_and_times):
     word_indices = range(len(words))    # contains an *index* for each word
     # BEGIN PROBLEM 10
     "*** YOUR CODE HERE ***"
+    result = []
+    for i in player_indices:
+        result.append([])
+    for i in word_indices:
+        time = []
+        for j in player_indices:
+            time.append(get_time(times, j, i))
+        fastest_time = min(time)
+        player_index = time.index(fastest_time)
+        result[player_index].append(words[i])
+
+    return result
     # END PROBLEM 10
 
 
@@ -352,7 +434,7 @@ def get_time(times, player_num, word_index):
     return times[player_num][word_index]
 
 
-enable_multiplayer = False  # Change to True when you're ready to race.
+enable_multiplayer = True  # Change to True when you're ready to race.
 
 ##########################
 # Command Line Interface #
