@@ -13,6 +13,8 @@ def shuffle(s):
     """
     assert len(s) % 2 == 0, 'len(seq) must be even'
     "*** YOUR CODE HERE ***"
+    length = int(len(s) / 2)
+    return [x for i in range(length) for x in (s[i], s[i + length])]
 
 
 def deep_map(f, s):
@@ -38,6 +40,12 @@ def deep_map(f, s):
     True
     """
     "*** YOUR CODE HERE ***"
+    for i in range(len(s)):
+        if type(s[i]) == list:
+            deep_map(f, s[i])
+        else:
+            s[i] = f(s[i])
+
 
 
 HW_SOURCE_FILE=__file__
@@ -47,11 +55,13 @@ def planet(mass):
     """Construct a planet of some mass."""
     assert mass > 0
     "*** YOUR CODE HERE ***"
+    return ['planet', mass]
 
 def mass(p):
     """Select the mass of a planet."""
     assert is_planet(p), 'must call mass on a planet'
     "*** YOUR CODE HERE ***"
+    return p[1]
 
 def is_planet(p):
     """Whether p is a planet."""
@@ -104,6 +114,19 @@ def balanced(m):
     True
     """
     "*** YOUR CODE HERE ***"
+    left_arm = left(m)
+    right_arm = right(m)
+    left_end = end(left_arm)
+    right_end = end(right_arm)
+    
+    if is_mobile(left_end):
+        if not balanced(left_end):
+            return False
+    if is_mobile(right_end):
+        if not balanced(right_end):
+            return False
+    
+    return length(left_arm) * total_mass(left_end) == length(right_arm) * total_mass(right_end)
 
 
 def berry_finder(t):
@@ -124,6 +147,16 @@ def berry_finder(t):
     True
     """
     "*** YOUR CODE HERE ***"
+    if is_tree(t):
+        if label(t) == 'berry':
+            return True
+        for branch in branches(t):
+            if berry_finder(branch) == True:
+                return True
+    if is_leaf(t):
+        if t == 'berry':
+            return True
+    return False
 
 
 HW_SOURCE_FILE=__file__
@@ -139,6 +172,10 @@ def max_path_sum(t):
     17
     """
     "*** YOUR CODE HERE ***"
+    if is_leaf(t):
+        return label(t)
+    if is_tree(t):
+        return label(t) + max([max_path_sum(branch) for branch in branches(t)])
 
 
 def mobile(left, right):
