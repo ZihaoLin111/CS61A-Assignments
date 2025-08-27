@@ -324,11 +324,17 @@ class ContainerAnt(Ant):
     def can_contain(self, other):
         # BEGIN Problem 8a
         "*** YOUR CODE HERE ***"
+        if self.ant_contained == None and not other.is_container == False:
+            return True
+        else:
+            return False
         # END Problem 8a
 
     def store_ant(self, ant):
         # BEGIN Problem 8a
         "*** YOUR CODE HERE ***"
+        if self.can_contain:
+            self.ant_contained = ant
         # END Problem 8a
 
     def remove_ant(self, ant):
@@ -349,6 +355,7 @@ class ContainerAnt(Ant):
     def action(self, gamestate):
         # BEGIN Problem 8a
         "*** YOUR CODE HERE ***"
+        self.store_ant(self.place.ant)
         # END Problem 8a
 
 
