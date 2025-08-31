@@ -101,6 +101,7 @@ class Ant(Insect):
     implemented = False  # Only implemented Ant classes should be instantiated
     food_cost = 0
     is_container = False
+    doubled = False
     # ADD CLASS ATTRIBUTES HERE
 
     def __init__(self, health=1):
@@ -144,7 +145,10 @@ class Ant(Insect):
         """Double this ants's damage, if it has not already been doubled."""
         # BEGIN Problem 12
         "*** YOUR CODE HERE ***"
-        
+        if not hasattr(self, "doubled") or self.doubled == False:
+            self.doubled = True
+            if hasattr(self, 'damage'):
+                self.damage = self.damage * 2
         # END Problem 12
 
 
@@ -440,6 +444,14 @@ class QueenAnt(ThrowerAnt):
         # BEGIN Problem 12
         "*** YOUR CODE HERE ***"
         super().action(gamestate)
+        place = self.place.exit
+        while place is not None:
+            ant = place.ant
+            if ant is not None:
+                ant.double()
+            if hasattr(ant, "ant_contained") and ant.ant_contained is not None:
+                ant.ant_contained.double()
+            place = place.exit
         # END Problem 12
 
     def reduce_health(self, amount):
@@ -465,12 +477,32 @@ class SlowThrower(ThrowerAnt):
     name = 'Slow'
     food_cost = 6
     # BEGIN Problem EC 1
-    implemented = False   # Change to True to view in the GUI
+    implemented = True   # Change to True to view in the GUI
     # END Problem EC 1
 
     def throw_at(self, target):
         # BEGIN Problem EC 1
         "*** YOUR CODE HERE ***"
+        
+        target.is_slowed = True
+        target.slowed_turn += 5
+
+        if not hasattr(target, 'original_action'):
+            target.original_action = target.action
+
+        def slowed_action(gamestate):
+            """Wrapper around the bee's original action with slow effect."""
+            if target.slowed_turn > 0:
+                if gamestate.time % 2 == 0:  
+                    target.original_action(gamestate)
+                target.slowed_turn -= 1
+            else:
+                target.action = target.original_action
+                target.original_action(gamestate)
+
+        target.action = slowed_action
+
+            
         # END Problem EC 1
 
 
@@ -549,6 +581,9 @@ class Bee(Insect):
     name = 'Bee'
     damage = 1
     is_waterproof = True
+
+    is_slowed = False
+    slowed_turn = 0
 
 
     def sting(self, ant):
