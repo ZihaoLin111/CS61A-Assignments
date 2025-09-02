@@ -102,6 +102,7 @@ class Ant(Insect):
     food_cost = 0
     is_container = False
     doubled = False
+    blocks_path = True
     # ADD CLASS ATTRIBUTES HERE
 
     def __init__(self, health=1):
@@ -484,14 +485,12 @@ class SlowThrower(ThrowerAnt):
         # BEGIN Problem EC 1
         "*** YOUR CODE HERE ***"
         
-        target.is_slowed = True
-        target.slowed_turn += 5
+        target.slowed_turn = 5
 
         if not hasattr(target, 'original_action'):
             target.original_action = target.action
 
         def slowed_action(gamestate):
-            """Wrapper around the bee's original action with slow effect."""
             if target.slowed_turn > 0:
                 if gamestate.time % 2 == 0:  
                     target.original_action(gamestate)
@@ -512,12 +511,13 @@ class ScaryThrower(ThrowerAnt):
     name = 'Scary'
     food_cost = 6
     # BEGIN Problem EC 2
-    implemented = False   # Change to True to view in the GUI
+    implemented = True   # Change to True to view in the GUI
     # END Problem EC 2
 
     def throw_at(self, target):
         # BEGIN Problem EC 2
         "*** YOUR CODE HERE ***"
+        target.scare(2)
         # END Problem EC 2
 
 
@@ -527,14 +527,19 @@ class NinjaAnt(Ant):
     name = 'Ninja'
     damage = 1
     food_cost = 5
+    blocks_path = False
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Problem EC 3
-    implemented = False   # Change to True to view in the GUI
+    implemented = True   # Change to True to view in the GUI
     # END Problem EC 3
 
     def action(self, gamestate):
         # BEGIN Problem EC 3
         "*** YOUR CODE HERE ***"
+        bees_copy = list(self.place.bees)
+
+        for bee in bees_copy:
+            bee.reduce_health(self.damage)
         # END Problem EC 3
 
 
@@ -543,9 +548,10 @@ class LaserAnt(ThrowerAnt):
 
     name = 'Laser'
     food_cost = 10
+    damage = 2
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Problem EC 4
-    implemented = False   # Change to True to view in the GUI
+    implemented = True   # Change to True to view in the GUI
     # END Problem EC 4
 
     def __init__(self, health=1):
@@ -554,12 +560,27 @@ class LaserAnt(ThrowerAnt):
 
     def insects_in_front(self):
         # BEGIN Problem EC 4
-        return {}
+        distance = {}
+        dis = 0
+        place = self.place
+        while place:
+            if not place.is_hive:
+                if place.ant is not None and place.ant is not self:
+                    distance[place.ant] = dis
+                    if place.ant.is_container and place.ant.ant_contained is not None:
+                        if place.ant.ant_contained is not self:
+                            distance[place.ant.ant_contained] = dis
+                for bee in place.bees:
+                    distance[bee] = dis
+            place = place.entrance
+            dis += 1
+        return distance
         # END Problem EC 4
 
     def calculate_damage(self, distance):
         # BEGIN Problem EC 4
-        return 0
+        hit = self.damage - 0.0625 * self.insects_shot - 0.25 * distance
+        return max(hit, 0)
         # END Problem EC 4
 
     def action(self, gamestate):
@@ -582,9 +603,11 @@ class Bee(Insect):
     damage = 1
     is_waterproof = True
 
-    is_slowed = False
     slowed_turn = 0
 
+    has_been_scaried = False
+    is_scaried = False
+    scaried_turn = 0
 
     def sting(self, ant):
         """Attack an ANT, reducing its health by 1."""
@@ -599,7 +622,7 @@ class Bee(Insect):
         """Return True if this Bee cannot advance to the next Place."""
         # Special handling for NinjaAnt
         # BEGIN Problem EC 3
-        return self.place.ant is not None
+        return self.place.ant is not None and self.place.ant.blocks_path
         # END Problem EC 3
 
     def action(self, gamestate):
@@ -610,6 +633,14 @@ class Bee(Insect):
         """
         destination = self.place.exit
 
+        if self.is_scaried == True:
+            if self.place.entrance.is_hive:
+                self.scaried_turn = 0
+            if self.scaried_turn == 0:
+                self.is_scaried = False
+            else:
+                destination = self.place.entrance
+                self.scaried_turn -= 1
 
         if self.blocked():
             self.sting(self.place.ant)
@@ -631,6 +662,15 @@ class Bee(Insect):
         """
         # BEGIN Problem EC 2
         "*** YOUR CODE HERE ***"
+        if self.is_scaried == True:
+            return
+        else:
+            self.is_scaried = True
+            self.has_been_scaried = True
+            self.scaried_turn += length
+
+
+
         # END Problem EC 2
 
 
