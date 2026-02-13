@@ -3,12 +3,14 @@
 
 (define (square n) (* n n))
 
-(define (pow-expr base exp)
-  (if (= exp 0)
-    1
-    (if (odd? exp) 
-      `(* ,base ,(pow-expr base (- exp 1)))
-      `(square ,(pow-expr base (/ exp 2))))))
+(define (pow-expr base exp) 
+    (if (= exp 0)
+      1
+      (if (odd? exp)
+        `(* ,base ,(pow-expr base (- exp 1)))
+        `(square ,(pow-expr base(/ exp 2))))
+    )
+)
 
 (define-macro (repeat n expr)
   `(repeated-call ,n (lambda () ,expr)))
@@ -17,4 +19,4 @@
 (define (repeated-call n f)
   (if (= n 1)
       (f)
-      (begin (f) (repeated-call (- n 1) f))))
+      (begin (repeated-call (- n 1) f) (f))))
